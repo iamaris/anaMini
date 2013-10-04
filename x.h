@@ -25,7 +25,6 @@ namespace mini {
     void clear() { size = 0; }
 
     unsigned size;
-
     float pt[NMAX];
     float eta[NMAX];
     float phi[NMAX];
@@ -75,7 +74,6 @@ namespace mini {
     void clear() { size = 0; }
 
     unsigned size;
-
     float pt[NMAX];
     float eta[NMAX];
     float phi[NMAX];
@@ -123,7 +121,6 @@ namespace mini {
     void clear() { size = 0; }
 
     unsigned size;
-
     float pt[NMAX];
     float eta[NMAX];
     float phi[NMAX];
@@ -158,7 +155,6 @@ namespace mini {
     void clear() { size = 0; }
 
     unsigned size;
-
     float pt[NMAX];
     float eta[NMAX];
     float phi[NMAX];
@@ -186,7 +182,6 @@ namespace mini {
     void clear() { size = 0; }
 
     unsigned size;
-
     float x[NMAX];
     float y[NMAX];
     float z[NMAX];
@@ -483,6 +478,40 @@ namespace mini {
   //fake photon from jets
   //if(photon.sigmaIetaIeta < 0.012 && chIso < 2.6) goodPhotons.push_back(&photon);
   //else if(photon.sigmaIetaIeta < 0.014 && chIso < 15.) fakePhotons.push_back(&photon);
+  std::set<int>
+  TightMuon2(muon & _m) {
+    std::set<int> tight;
+    for (unsigned int i=0;i<_m.size;i++) {
+        if(_m.pt[i] <= 200.) {
+          if(_m.iSubdet[i] == -1) continue;
+          if(!_m.isGlobalMuon[i]) continue;
+          if(!_m.isPFMuon[i]) continue; 
+          if(_m.normChi2[i] >= 10.) continue;
+          if(_m.nValidMuonHits[i] <= 0) continue;
+          if(_m.nMatchedStations[i] <= 1) continue;
+          if(_m.dxy[i] >= 0.2) continue;
+          if(_m.dz[i] >= 0.5) continue;
+          if(_m.nValidPixelHits[i] <= 0) continue;
+          if(_m.nLayersWithMmt[i] <=5) continue;
+          if(_m.combRelIso[i] >= 0.12) continue;
+          tight.insert(i);
+        } else {
+          if(_m.iSubdet[i] == -1) continue;
+          if(!_m.isGlobalMuon[i]) continue;
+          if(_m.nValidMuonHits[i] <= 0) continue;
+          if(_m.nMatchedStations[i] <= 1) continue;
+          if(_m.dxy[i] >= 0.2) continue;
+          if(_m.dz[i] >= 0.5) continue;
+          if(_m.nValidPixelHits[i] <= 0) continue;
+          if(_m.nLayersWithMmt[i] <=8) continue;
+          if(_m.combRelIso[i] >= 0.12) continue;
+          tight.insert(i);
+        }
+      
+    }
+    return tight;
+  }
+
 
   std::set<int>
   MediumElectron(electron& _e) {

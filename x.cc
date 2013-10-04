@@ -74,8 +74,8 @@ void x()
   //define histograms
   //float bin[31] = {0,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,255,270,300,330,360,390};
   //TH1F* h_met          = new TH1F("h_met", "MET", 30, bin);
-  TCanvas *c2h = new TCanvas("c2h", "plots",800, 800);
-  TCanvas *x = new TCanvas("x", "plots",800, 800);
+  //TCanvas *c2h = new TCanvas("c2h", "plots",800, 800);
+  //TCanvas *x = new TCanvas("x", "plots",800, 800);
   //TH1F* h_mass= new TH1F("h_mass", "M_{l#gamma}", 120, 0., 120.);
   //TH1F* h_mass_fake= new TH1F("h_mass_fake", "M_{l#gamma_{fake}}", 120, 0., 120.);
   //TH1F* h_mass_fake_met= new TH1F("h_mass_fake_met", "M_{#mu#mu}", 120, 0., 120.);
@@ -174,11 +174,13 @@ void x()
     std::set<int> jp = JetFakePhoton(rp);
     std::set<int> lj = LooseJet(rj);
     std::set<int> me = MediumElectron(re);
+    std::set<int> tm = TightMuon(rm);
 
     if(j.size > 0) nCnt[2]++;
     if(e.size > 0) nCnt[3]++;
     if(m.size > 0) nCnt[4]++;
     if(lp.size()>0)   nCnt[5]++;
+    if(tm.size()>0)   nCnt[11]++;
     if(yp.size()>0)   nCnt[6]++;
     if(p.size > 0) nCnt[7]++;
     
@@ -200,7 +202,16 @@ void x()
     h_fe_pt->Fill(re.pt[*it]);
 
     if(e.size>0) {
+      nCnt[12]++;
       for(int k(0);k<e.size;k++) h_e_pt->Fill(e.pt[k]);
+      int clean_e = 0;
+      for(int k(0);k<e.size;k++) {
+        if(deltaR(p.eta[0],p.phi[0],e.eta[k],e.phi[k])>0.1) {
+          h_ce_pt->Fill(e.pt[k]);
+          clean_e++;
+        }
+      }
+      if(clean_e++) nCnt[13]++;
     }
 
     for (int k = 0;k<re.size;k++) {
@@ -233,6 +244,8 @@ void x()
     h_m_pt_lep->Fill(m.pt[0]);    
     //cout<<met<<endl;
   }//while
+/*
+TCanvas *x = new TCanvas("x", "plots",800, 800);
 x->Divide(2,1);
 x->cd(1);
 h_dre->Draw();
@@ -240,6 +253,8 @@ h_drm->Draw("same");
 x->cd(2);
 h_e_pt->Draw();
 h_fe_pt->Draw("same");
+*/
+h_mt->Draw();
 /*
 //h_met->Scale(1/1000.);
 //h_met_fake->Draw("same");
@@ -295,10 +310,14 @@ std::cout<< "Selected photon                            : "<< nCnt[7] <<std::end
 std::cout<< "Loose photon w/ pt > 70                    : "<< nCnt[8] <<std::endl;
 std::cout<< "Medium electron/Tight mu & Loose Photon 70 : "<< nCnt[9] <<std::endl;
 std::cout<< "Medium e/Tight mu & Loose Photon 70 & jet  : "<< nCnt[10] <<std::endl;
+std::cout<< "Tight mu                                   : "<< nCnt[11] <<std::endl;
+std::cout<< "Medium electron -Unclean                   : "<< nCnt[12] <<std::endl;
+std::cout<< "Medium electron -Clean                     : "<< nCnt[13] <<std::endl;
+
 
 //save histograms inside sampleAnalysis.root
 TObjArray hlist(0);
-hlist.Add( h_met );
+hlist.Add( h_mt );
 
 TFile fout("outputA_sampleAnalysis.root", "recreate");
 hlist.Write();
