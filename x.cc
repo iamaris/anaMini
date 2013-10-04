@@ -115,7 +115,7 @@ void x()
   TH1F* h_m_pt_lep = new TH1F("h_m_pt_lep", "Muon Pt", 50, 0., 500.);
   TH1F* h_m_pt_jet = new TH1F("h_m_pt_jet", "Muon Pt", 50, 0., 500.);
  
-  unsigned int nCnt[20] = {0};
+  unsigned int nCnt[50] = {0};
   //loop over events
   long iEntry = 0;//change to 0
   while(allObjects.GetEntry(iEntry++) != 0){
@@ -169,20 +169,22 @@ void x()
 
 
     std::set<int> yp = YLoosePhoton(rp);
-    std::set<int> lp = LoosePhoton(rp);
     std::set<int> ep = ElectronFakePhoton(rp);
     std::set<int> jp = JetFakePhoton(rp);
     std::set<int> lj = LooseJet(rj);
     std::set<int> me = MediumElectron(re);
     std::set<int> tm = TightMuon(rm);
+    std::set<int> lp = LoosePhoton(rp);
 
     if(j.size > 0) nCnt[2]++;
     if(e.size > 0) nCnt[3]++;
     if(m.size > 0) nCnt[4]++;
-    if(lp.size()>0)   nCnt[5]++;
-    if(tm.size()>0)   nCnt[11]++;
-    if(yp.size()>0)   nCnt[6]++;
-    if(p.size > 0) nCnt[7]++;
+    if(p.size > 0) nCnt[5]++;
+
+    if(lj.size()>0) nCnt[6]++;
+    if(me.size()>0) nCnt[7]++;
+    if(tm.size()>0) nCnt[8]++;
+    if(lp.size()>0) nCnt[9]++;
     
     if(p.size<1) continue;
     h_p_pt_lph->Fill(p.pt[0]);    
@@ -195,7 +197,7 @@ void x()
 
     if(p.pt[0]<70.) continue;
     h_p_pt_l70->Fill(p.pt[0]);    
-    nCnt[8]++;
+    nCnt[20]++;
     set<int> fakeE;
     fakeE = FakeElectron(re);
     for (std::set<int>::iterator it=fakeE.begin(); it!=fakeE.end(); ++it)
@@ -232,7 +234,7 @@ void x()
     }
 
     h_met->Fill(met);
-    nCnt[9]++;
+    nCnt[19]++;
     h_p_pt_lep->Fill(p.pt[0]);    
     h_m_pt_lep->Fill(m.pt[0]);    
     h_met_s->Fill(met);
@@ -301,18 +303,19 @@ h_m_pt_jet->Draw("same");
 */
 std::cout<< "Total events                               : "<< nCnt[0] <<std::endl;
 std::cout<< "HLT passed                                 : "<< nCnt[1] <<std::endl;
-std::cout<< "Loose Jet                                  : "<< nCnt[2] <<std::endl;
-std::cout<< "Medium electron                            : "<< nCnt[3] <<std::endl;
-std::cout<< "Tight muon                                 : "<< nCnt[4] <<std::endl;
-std::cout<< "Loose photon                               : "<< nCnt[5] <<std::endl;
-std::cout<< "Y Loose photon                             : "<< nCnt[6] <<std::endl;
-std::cout<< "Selected photon                            : "<< nCnt[7] <<std::endl;
-std::cout<< "Loose photon w/ pt > 70                    : "<< nCnt[8] <<std::endl;
+std::cout<< "---------------------------------------------"<<std::endl;
+std::cout<< "w/ selected jet , loose jet                : "<< nCnt[2]<<" , "<<nCnt[6] <<std::endl;
+std::cout<< "w/ selected electron , medium electron     : "<< nCnt[3]<<" , "<<nCnt[7] <<std::endl;
+std::cout<< "w/ selected muon, tight muon               : "<< nCnt[4]<<" , "<<nCnt[8] <<std::endl;
+std::cout<< "w/ selected photon, loose photon           : "<< nCnt[5]<<" , "<<nCnt[9] <<std::endl;
+std::cout<< "---------------------------------------------"<<std::endl;
+std::cout<< "Loose photon w/ pt > 70                    : "<< nCnt[20] <<std::endl;
 std::cout<< "Medium electron/Tight mu & Loose Photon 70 : "<< nCnt[9] <<std::endl;
 std::cout<< "Medium e/Tight mu & Loose Photon 70 & jet  : "<< nCnt[10] <<std::endl;
 std::cout<< "Tight mu                                   : "<< nCnt[11] <<std::endl;
 std::cout<< "Medium electron -Unclean                   : "<< nCnt[12] <<std::endl;
 std::cout<< "Medium electron -Clean                     : "<< nCnt[13] <<std::endl;
+std::cout<< "Medium electron                            : "<< nCnt[14] <<std::endl;
 
 
 //save histograms inside sampleAnalysis.root

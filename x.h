@@ -349,23 +349,39 @@ namespace mini {
     if(_tree.GetBranch("vertex.isGood")) _tree.SetBranchAddress("vertex.isGood", isGood);
   }  
 
-
-  std::set<int> 
+  std::set<int>
   LooseJet(jet& _p) {
     std::set<int> loose;
     for(unsigned int i=0;i<_p.size;i++) {
-      if((_p.eta[i]<2.4) && (_p.eta[i]>-2.4)) {
-        if(_p.nhFraction[i] > 0.99) continue;
-        if(_p.neFraction[i] > 0.99) continue;
-        if(_p.nConstituents[i] < 2) continue;
+      if((_p.eta[i]<2.6) && (_p.eta[i]>-2.6)) {
+        if(_p.nhFraction[i] >= 0.99) continue;
+        if(_p.neFraction[i] >= 0.99) continue;
+        if(_p.nConstituents[i] <= 1) continue;
         if(_p.chFraction[i] <= 0) continue;
-        if(_p.ceFraction[i] > 0.99) continue;
+        if(_p.ceFraction[i] >= 0.99) continue;
+        if(_p.nCharged[i] <= 0) continue;
+        loose.insert(i);
+      } 
+    }
+    return loose;
+  }
+
+  std::set<int> 
+  LooseJetNew(jet& _p) {
+    std::set<int> loose;
+    for(unsigned int i=0;i<_p.size;i++) {
+      if((_p.eta[i]<2.4) && (_p.eta[i]>-2.4)) {
+        if(_p.nhFraction[i] >= 0.99) continue;
+        if(_p.neFraction[i] >= 0.99) continue;
+        if(_p.nConstituents[i] <= 1) continue;
+        if(_p.chFraction[i] <= 0) continue;
+        if(_p.ceFraction[i] >= 0.99) continue;
         if(_p.nCharged[i] <= 0) continue;
         loose.insert(i);
       } else  {
-        if(_p.nhFraction[i] > 0.99) continue;
-        if(_p.neFraction[i] > 0.99) continue;
-        if(_p.nConstituents[i] < 2) continue;
+        if(_p.nhFraction[i] >= 0.99) continue;
+        if(_p.neFraction[i] >= 0.99) continue;
+        if(_p.nConstituents[i] <= 1) continue;
         loose.insert(i);
       }
     }
@@ -398,6 +414,32 @@ namespace mini {
     return loose;
   }
 
+  std::set<int>
+  EMObject(photon& _p) {
+    std::set<int> obj;
+    for(unsigned int i=0;i<_p.size;i++) {
+      if(_p.iSubdet[i]==0) {
+        //if(_p.nPixelSeeds[i] > 0) continue;
+        if(!(_p.electronVetoBit[i])) continue;
+        if(_p.hOverE[i] > 0.05) continue;
+        //if(_p.sigmaIetaIeta[i] > 0.012) continue;
+        if(_p.chargedHadronIso[i] > 2.6) continue;
+        if(_p.neutralHadronIso[i] > 3.5) continue;
+        if(_p.photonIso[i] > 1.3) continue;
+        obj.insert(i);
+      } else if(_p.iSubdet[i]==1) {
+        //if(_p.nPixelSeeds[i] > 0) continue;
+        if(!(_p.electronVetoBit[i])) continue;
+        if(_p.hOverE[i] > 0.05) continue;
+        //if(_p.sigmaIetaIeta[i] > 0.034) continue;
+        if(_p.chargedHadronIso[i] > 2.3) continue;
+        if(_p.neutralHadronIso[i] > 2.9) continue;
+        obj.insert(i);
+      }
+    }
+    return obj;
+  }
+
 
   std::set<int>
   YLoosePhoton(photon& _p) {
@@ -412,7 +454,7 @@ namespace mini {
 
 
   std::set<int>
-  TightMuon(muon& _p) {
+  YTightMuon(muon& _p) {
     std::set<int> tight;
     for(unsigned int i=0;i<_p.size;i++) {
       if(_p.isTight[i]) {
@@ -479,7 +521,7 @@ namespace mini {
   //if(photon.sigmaIetaIeta < 0.012 && chIso < 2.6) goodPhotons.push_back(&photon);
   //else if(photon.sigmaIetaIeta < 0.014 && chIso < 15.) fakePhotons.push_back(&photon);
   std::set<int>
-  TightMuon2(muon & _m) {
+  TightMuon(muon & _m) {
     std::set<int> tight;
     for (unsigned int i=0;i<_m.size;i++) {
         if(_m.pt[i] <= 200.) {
@@ -512,6 +554,40 @@ namespace mini {
     return tight;
   }
 
+  std::set<int>
+  FakeMuon(muon & _m) {
+    std::set<int> tight;
+    for (unsigned int i=0;i<_m.size;i++) {
+        if(_m.pt[i] <= 200.) {
+          if(_m.iSubdet[i] == -1) continue;
+          if(!_m.isGlobalMuon[i]) continue;
+          if(!_m.isPFMuon[i]) continue;
+          if(_m.normChi2[i] >= 10.) continue;
+          if(_m.nValidMuonHits[i] <= 0) continue;
+          if(_m.nMatchedStations[i] <= 1) continue;
+          if(_m.dxy[i] >= 0.2) continue;
+          if(_m.dz[i] >= 0.5) continue;
+          if(_m.nValidPixelHits[i] <= 0) continue;
+          if(_m.nLayersWithMmt[i] <=5) continue;
+          if(_m.combRelIso[i] < 0.12 && _m.combRelIso[i] > 0.25) continue;
+          tight.insert(i);
+        } else {
+          if(_m.iSubdet[i] == -1) continue;
+          if(!_m.isGlobalMuon[i]) continue;
+          if(_m.nValidMuonHits[i] <= 0) continue;
+          if(_m.nMatchedStations[i] <= 1) continue;
+          if(_m.dxy[i] >= 0.2) continue;
+          if(_m.dz[i] >= 0.5) continue;
+          if(_m.nValidPixelHits[i] <= 0) continue;
+          if(_m.nLayersWithMmt[i] <=8) continue;
+          if(_m.combRelIso[i] < 0.12 && _m.combRelIso[i] > 0.25) continue;
+          tight.insert(i);
+        }
+
+    }
+    return tight;
+  }
+
 
   std::set<int>
   MediumElectron(electron& _e) {
@@ -527,6 +603,8 @@ namespace mini {
         if(_e.epDiff[i] > 0.05) continue;
         if(_e.combRelIso[i] > 0.15) continue;
         if(!_e.passConversionVeto[i]) continue;
+        if(_e.vtxFitProb[i] > 0.000001) continue;
+        if(_e.nMissingHits[i] > 1) continue;
         medium.insert(i);
       } else if(_e.iSubdet[i]==1){
         if(_e.deltaEta[i] > 0.007) continue;
@@ -538,6 +616,8 @@ namespace mini {
         if(_e.epDiff[i] > 0.05) continue;
         if(_e.combRelIso[i] > 0.15) continue;
         if(!_e.passConversionVeto[i]) continue;
+        if(_e.vtxFitProb[i] > 0.000001) continue;
+        if(_e.nMissingHits[i] > 1) continue;
         medium.insert(i);
       }
     }
@@ -560,6 +640,8 @@ namespace mini {
         if(_e.combRelIso[i] < 0.15) continue;
         if(_e.combRelIso[i] > 0.30) continue;
         if(!_e.passConversionVeto[i]) continue;
+        if(_e.vtxFitProb[i] > 0.000001) continue;
+        if(_e.nMissingHits[i] > 1) continue;
         fake.insert(i);
       } else if(_e.iSubdet[i]==1){
         if(_e.deltaEta[i] > 0.007) continue;
@@ -572,6 +654,8 @@ namespace mini {
         if(_e.combRelIso[i] < 0.15) continue;
         if(_e.combRelIso[i] > 0.30) continue;
         if(!_e.passConversionVeto[i]) continue;
+        if(_e.vtxFitProb[i] > 0.000001) continue;
+        if(_e.nMissingHits[i] > 1) continue;
         fake.insert(i);
       }
     }
