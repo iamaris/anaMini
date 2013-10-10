@@ -1,21 +1,26 @@
 /* Auto-generated header file */
 #ifndef x_h
 #define x_h
+#include <math.h>
 #include <set>
 
 namespace mini {
 
   unsigned const NMAX(512);
 
-  double
-  deltaR(double _eta1, double _phi1, double _eta2, double _phi2)
+  float
+  deltaR(float _eta1, float _phi1, float _eta2, float _phi2)
   {
-    double dEta(_eta1 - _eta2);
-    double dPhi(TVector2::Phi_mpi_pi(_phi1 - _phi2));
+    float dEta(_eta1 - _eta2);
+    float dPhi(TVector2::Phi_mpi_pi(_phi1 - _phi2));
     return sqrt(dEta * dEta + dPhi * dPhi);
   }
 
-
+  float 
+  mt(float _met,float _metPhi,float _lPt,float _lPhi)
+  {
+  return sqrt(2.*_met*_lPt*(1-cos(_metPhi-_lPhi)));
+  }
 
   class photon {
   public:
@@ -349,9 +354,9 @@ namespace mini {
     if(_tree.GetBranch("vertex.isGood")) _tree.SetBranchAddress("vertex.isGood", isGood);
   }  
 
-  std::set<int>
+  std::set<unsigned int>
   LooseJet(jet& _p) {
-    std::set<int> loose;
+    std::set<unsigned int> loose;
     for(unsigned int i=0;i<_p.size;i++) {
       if((_p.eta[i]<2.6) && (_p.eta[i]>-2.6)) {
         if(_p.nhFraction[i] >= 0.99) continue;
@@ -366,9 +371,9 @@ namespace mini {
     return loose;
   }
 
-  std::set<int> 
+  std::set<unsigned int> 
   LooseJetNew(jet& _p) {
-    std::set<int> loose;
+    std::set<unsigned int> loose;
     for(unsigned int i=0;i<_p.size;i++) {
       if((_p.eta[i]<2.4) && (_p.eta[i]>-2.4)) {
         if(_p.nhFraction[i] >= 0.99) continue;
@@ -388,9 +393,9 @@ namespace mini {
     return loose;
   }
 
-  std::set<int> 
+  std::set<unsigned int> 
   LoosePhoton(photon& _p) {
-    std::set<int> loose;
+    std::set<unsigned int> loose;
     for(unsigned int i=0;i<_p.size;i++) {
       if(_p.iSubdet[i]==0) {
         //if(_p.nPixelSeeds[i] > 0) continue;
@@ -414,10 +419,47 @@ namespace mini {
     return loose;
   }
 
-  std::set<int>
-  EMObject(photon& _p) {
-    std::set<int> obj;
+  std::set<unsigned int> 
+  LoosePhoton(photon& _p, float _pt) {
+    std::set<unsigned int> loose;
     for(unsigned int i=0;i<_p.size;i++) {
+      if(_p.pt[i]<_pt) continue;
+      if(_p.iSubdet[i]==0) {
+        //if(_p.nPixelSeeds[i] > 0) continue;
+        if(!(_p.electronVetoBit[i])) continue;
+        if(_p.hOverE[i] > 0.05) continue;
+        if(_p.sigmaIetaIeta[i] > 0.012) continue;
+        if(_p.chargedHadronIso[i] > 2.6) continue;
+        if(_p.neutralHadronIso[i] > 3.5) continue;
+        if(_p.photonIso[i] > 1.3) continue;
+        loose.insert(i);
+      } else if(_p.iSubdet[i]==1) {
+        //if(_p.nPixelSeeds[i] > 0) continue;
+        if(!(_p.electronVetoBit[i])) continue;
+        if(_p.hOverE[i] > 0.05) continue;
+        if(_p.sigmaIetaIeta[i] > 0.034) continue;
+        if(_p.chargedHadronIso[i] > 2.3) continue;
+        if(_p.neutralHadronIso[i] > 2.9) continue;
+        loose.insert(i);
+      }
+    }
+    return loose;
+  }
+
+  std::set<unsigned int> 
+  LoosePhoton(photon& _p, std::set<unsigned int> _loose, float _pt=70.0) {
+    for (std::set<unsigned int>::iterator it=_loose.begin(); it!=_loose.end(); ++it) {
+      if(_p.pt[*it]<_pt) _loose.erase(it);
+    }
+    return _loose;
+  }
+
+
+  std::set<unsigned int>
+  EMObject(photon& _p,float _pt) {
+    std::set<unsigned int> obj;
+    for(unsigned int i=0;i<_p.size;i++) {
+      if(_p.pt[i] < _pt) continue;
       if(_p.iSubdet[i]==0) {
         //if(_p.nPixelSeeds[i] > 0) continue;
         if(!(_p.electronVetoBit[i])) continue;
@@ -440,10 +482,9 @@ namespace mini {
     return obj;
   }
 
-
-  std::set<int>
+  std::set<unsigned int>
   YLoosePhoton(photon& _p) {
-    std::set<int> loose;
+    std::set<unsigned int> loose;
     for(unsigned int i=0;i<_p.size;i++) {
       if(_p.isLoose[i]) {
         loose.insert(i);
@@ -453,9 +494,9 @@ namespace mini {
   }
 
 
-  std::set<int>
+  std::set<unsigned int>
   YTightMuon(muon& _p) {
-    std::set<int> tight;
+    std::set<unsigned int> tight;
     for(unsigned int i=0;i<_p.size;i++) {
       if(_p.isTight[i]) {
         tight.insert(i);
@@ -465,9 +506,9 @@ namespace mini {
   }
 
 
-  std::set<int> 
+  std::set<unsigned int> 
   JetFakePhoton(photon& _p) {
-    std::set<int> fake;
+    std::set<unsigned int> fake;
     for(unsigned int i=0;i<_p.size;i++) {
       if(_p.pt[i]<10.) continue;
       if(_p.iSubdet[i]==0) {
@@ -490,9 +531,9 @@ namespace mini {
     return fake;
   }
 
-  std::set<int> 
+  std::set<unsigned int> 
   ElectronFakePhoton(photon& _p) {
-    std::set<int> fake;
+    std::set<unsigned int> fake;
     for(unsigned int i=0;i<_p.size;i++) {
       if(_p.iSubdet[i]==0) {
         //if(_p.nPixelSeeds[i] == 0) continue;
@@ -520,9 +561,9 @@ namespace mini {
   //fake photon from jets
   //if(photon.sigmaIetaIeta < 0.012 && chIso < 2.6) goodPhotons.push_back(&photon);
   //else if(photon.sigmaIetaIeta < 0.014 && chIso < 15.) fakePhotons.push_back(&photon);
-  std::set<int>
+  std::set<unsigned int>
   TightMuon(muon & _m) {
-    std::set<int> tight;
+    std::set<unsigned int> tight;
     for (unsigned int i=0;i<_m.size;i++) {
         if(_m.pt[i] <= 200.) {
           if(_m.iSubdet[i] == -1) continue;
@@ -554,9 +595,10 @@ namespace mini {
     return tight;
   }
 
-  std::set<int>
+
+  std::set<unsigned int>
   FakeMuon(muon & _m) {
-    std::set<int> tight;
+    std::set<unsigned int> tight;
     for (unsigned int i=0;i<_m.size;i++) {
         if(_m.pt[i] <= 200.) {
           if(_m.iSubdet[i] == -1) continue;
@@ -589,9 +631,9 @@ namespace mini {
   }
 
 
-  std::set<int>
+  std::set<unsigned int>
   MediumElectron(electron& _e) {
-    std::set<int> medium;
+    std::set<unsigned int> medium;
     for (unsigned int i=0;i<_e.size;i++) {
       if(_e.iSubdet[i]==0) {
         if(_e.deltaEta[i] > 0.004) continue;
@@ -624,10 +666,58 @@ namespace mini {
     return medium;
   }
 
+  std::set<unsigned int>
+  MediumElectron(electron& _e,photon& _p) {
+    std::set<unsigned int> medium;
+    std::set<unsigned int>::iterator it;
 
-  std::set<int>
+    for (unsigned int i=0;i<_e.size;i++) {
+      if(_e.iSubdet[i]==0) {
+        if(_e.deltaEta[i] > 0.004) continue;
+        if(_e.deltaPhi[i] > 0.06) continue;
+        if(_e.sigmaIetaIeta[i] > 0.01) continue;
+        if(_e.hOverE[i] > 0.12) continue;
+        if(_e.d0[i] > 0.02) continue;
+        if(_e.dz[i] > 0.1) continue;
+        if(_e.epDiff[i] > 0.05) continue;
+        if(_e.combRelIso[i] > 0.15) continue;
+        if(!_e.passConversionVeto[i]) continue;
+        if(_e.vtxFitProb[i] > 0.000001) continue;
+        if(_e.nMissingHits[i] > 1) continue;
+        medium.insert(i);
+      } else if(_e.iSubdet[i]==1){
+        if(_e.deltaEta[i] > 0.007) continue;
+        if(_e.deltaPhi[i] > 0.03) continue;
+        if(_e.sigmaIetaIeta[i] > 0.03) continue;
+        if(_e.hOverE[i] > 0.1) continue;
+        if(_e.d0[i] > 0.02) continue;
+        if(_e.dz[i] > 0.1) continue;
+        if(_e.epDiff[i] > 0.05) continue;
+        if(_e.combRelIso[i] > 0.15) continue;
+        if(!_e.passConversionVeto[i]) continue;
+        if(_e.vtxFitProb[i] > 0.000001) continue;
+        if(_e.nMissingHits[i] > 1) continue;
+        medium.insert(i);
+      }
+    }
+
+    for (it=medium.begin(); it!=medium.end(); ++it) {
+      for (unsigned int k=0;k<_p.size;k++) {
+        if(deltaR(_p.eta[k],_p.phi[k],_e.eta[*it],_e.phi[*it])<0.1) {
+          medium.erase(it);
+          break;
+        }
+      }
+    }
+
+    return medium;
+  }
+
+
+
+  std::set<unsigned int>
   FakeElectron(electron& _e) {
-    std::set<int> fake;
+    std::set<unsigned int> fake;
     for (unsigned int i=0;i<_e.size;i++) {
       if(_e.iSubdet[i]==0) {
         if(_e.deltaEta[i] > 0.004) continue;
