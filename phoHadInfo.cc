@@ -13,15 +13,15 @@ const double PI = 4.0*atan(1.0);
 void phoHadInfo()
 {
   TChain eventVars("eventVars");//define eventVars tree
-  eventVars.Add("./A1.root/eventVars");
+  eventVars.Add("../*.root/eventVars");
   //eventVars.Add("/export/cmss/acalamba/photonhad/D*.root/eventVars");
 
   TChain selectedObjects("selectedObjects");  //define eventVars tree
-  selectedObjects.Add("./A1.root/selectedObjects");
+  selectedObjects.Add("../*.root/selectedObjects");
   //selectedObjects.Add("/export/cmss/acalamba/photonhad/D*.root/selectedObjects");
 
   TChain allObjects("allObjects");  //define eventVars tree
-  allObjects.Add("./A1.root/allObjects");
+  allObjects.Add("../*.root/allObjects");
   //allObjects.Add("/export/cmss/acalamba/photonhad/D*.root/allObjects");
 
   allObjects.AddFriend("selectedObjects");
@@ -60,37 +60,39 @@ void phoHadInfo()
   //loop over events
   long iEntry = 0;
   while(allObjects.GetEntry(iEntry++) != 0){
-    nCnt[0]++;
+    unsigned n(0);
+    nCnt[n]++;
 
     if(!hlt0 && !hlt1) continue;
-    nCnt[1]++;
+    nCnt[++n]++;
 
-    std::set<unsigned int> tmB;
-    std::set<unsigned int> lmB;
-    std::set<unsigned int> teB;
-    std::set<unsigned int> meB;
-    std::set<unsigned int> leB;
-    std::set<unsigned int> tpB;
-    std::set<unsigned int> mpB;
-    std::set<unsigned int> lpB;
-    std::set<unsigned int> ljB;
+    std::set<unsigned> ljB;
+    std::set<unsigned> ljE;
+        
+    std::set<unsigned> lm; 
+    std::set<unsigned> tm;    
 
-    std::set<unsigned int> tmE;
-    std::set<unsigned int> lmE;
-    std::set<unsigned int> teE;
-    std::set<unsigned int> meE;
-    std::set<unsigned int> leE;
-    std::set<unsigned int> tpE;
-    std::set<unsigned int> mpE;
-    std::set<unsigned int> lpE;
-    std::set<unsigned int> ljE;
+    std::set<unsigned> leB;
+    std::set<unsigned> leE;
+    std::set<unsigned> meB;          
+    std::set<unsigned> meE;    
+    std::set<unsigned> teB;
+    std::set<unsigned> teE;
 
-    std::set<unsigned int> tcB;//tight clean electron barrel
-    std::set<unsigned int> mcB;//medium clean electron barrel
-    std::set<unsigned int> lcB;
-    std::set<unsigned int> tcE;
-    std::set<unsigned int> mcE;
-    std::set<unsigned int> lcE;
+    std::set<unsigned> lcB;
+    std::set<unsigned> lcE;
+    std::set<unsigned> mcB;//medium clean electron barrel
+    std::set<unsigned> mcE;
+    std::set<unsigned> tcB;//tight clean electron barrel
+    std::set<unsigned> tcE;              
+
+    std::set<unsigned> lpB;
+    std::set<unsigned> lpE;
+    std::set<unsigned> mpB;
+    std::set<unsigned> mpE;
+    std::set<unsigned> tpB; 
+    std::set<unsigned> tpE;
+
    
     //jet
     for(unsigned i(0);i<j.size;i++) {
@@ -103,21 +105,16 @@ void phoHadInfo()
 
     //muon 
     for(unsigned i(0);i<m.size;i++) {
-      if(m.iSubdet[i]==0) {//barrel
-        if(m.isLoose[i]) lmB.insert(i);      
-        if(m.isTight[i]) tmB.insert(i);      
-      } else if (m.iSubdet[i]==1) {//endcap
-        if(m.isLoose[i]) lmE.insert(i);
-        if(m.isTight[i]) tmE.insert(i);
-      }
+      if(m.isLoose[i]) lm.insert(i);      
+      if(m.isTight[i]) tm.insert(i);      
     }
 
     //electron
     for(unsigned i(0);i<e.size;i++) {
+      int dirty(0);
       for (unsigned k=0;k<p.size;k++) {
-        int clean(0);
         if(mini::deltaR(p.eta[k],p.phi[k],e.eta[i],e.phi[i])<0.1) {
-          clean++; 
+          dirty++; 
           break;
         }
       }
@@ -126,10 +123,21 @@ void phoHadInfo()
         if(e.isLoose[i])  leB.insert(i);
         if(e.isMedium[i]) meB.insert(i);
         if(e.isTight[i])  teB.insert(i);
+        if(!dirty) {
+          if(e.isLoose[i])  lcB.insert(i);
+          if(e.isMedium[i]) mcB.insert(i);
+          if(e.isTight[i])  tcB.insert(i);
+        }
       } else if (e.iSubdet[i]==1) {//endcap
         if(e.isLoose[i])  leE.insert(i);
         if(e.isMedium[i]) meE.insert(i);
         if(e.isTight[i])  teE.insert(i);
+        if(!dirty) {
+          if(e.isLoose[i])  lcE.insert(i);
+          if(e.isMedium[i]) mcE.insert(i);
+          if(e.isTight[i])  tcE.insert(i);
+        }
+
       }
     }
 
@@ -146,63 +154,78 @@ void phoHadInfo()
       }
     }
 
+    if(ljB.size()>0) nCnt[++n]++;
+    if(ljE.size()>0) nCnt[++n]++; 
+    
+    if(lm.size()>0) nCnt[++n]++;
+    if(tm.size()>0) nCnt[++n]++;
+    
+    if(leB.size()>0) nCnt[++n]++;
+    if(leE.size()>0) nCnt[++n]++;
+    if(meB.size()>0) nCnt[++n]++;      
+    if(meE.size()>0) nCnt[++n]++;
+    if(teB.size()>0) nCnt[++n]++;      
+    if(teE.size()>0) nCnt[++n]++;
+    
+    if(lcB.size()>0) nCnt[++n]++;
+    if(lcE.size()>0) nCnt[++n]++;
+    if(mcB.size()>0) nCnt[++n]++;      
+    if(mcE.size()>0) nCnt[++n]++;
+    if(tcB.size()>0) nCnt[++n]++;      
+    if(tcE.size()>0) nCnt[++n]++;    
+    
+    if(lpB.size()>0) nCnt[++n]++;
+    if(lpE.size()>0) nCnt[++n]++;
+    if(mpB.size()>0) nCnt[++n]++;      
+    if(mpE.size()>0) nCnt[++n]++;
+    if(tpB.size()>0) nCnt[++n]++;      
+    if(tpE.size()>0) nCnt[++n]++;   
+
 
 
 
   }//while
 
-
-std::cout<< "Total events                                 : "<< nCnt[0] <<std::endl;
-std::cout<< "HLT passed                                   : "<< nCnt[1] <<std::endl;
+int q(0);
+std::cout<< "Total events                                 : "<< nCnt[q] <<std::endl;
+std::cout<< "HLT passed                                   : "<< nCnt[++q] <<std::endl;
 std::cout<< "-----------------------------------------------"<<std::endl;
-std::cout<< "w/ loose jet Barrel                          : "<< nCnt[2]<<" , "<<nCnt[2]/nCnt[1] <<std::endl;
-std::cout<< "w/ loose jet EndCap                          : "<< nCnt[3]<<" , "<<nCnt[3]/nCnt[1] <<std::endl;
+std::cout<< "w/ loose jet Barrel                          : "<< nCnt[++q]<<" , "<<nCnt[q]/float(nCnt[1]) <<std::endl;
+std::cout<< "w/ loose jet EndCap                          : "<< nCnt[++q]<<" , "<<nCnt[q]/float(nCnt[1]) <<std::endl;
 std::cout<< "-----------------------------------------------"<<std::endl;
-std::cout<< "w/ loose muon Barrel                         : "<< nCnt[4]<<" , "<<nCnt[4]/nCnt[1] <<std::endl;
-std::cout<< "w/ loose muon EndCap                         : "<< nCnt[5]<<" , "<<nCnt[5]/nCnt[1] <<std::endl;
-std::cout<< "w/ tight muon Barrel                         : "<< nCnt[6]<<" , "<<nCnt[6]/nCnt[1] <<std::endl;
-std::cout<< "w/ tight muon EndCap                         : "<< nCnt[7]<<" , "<<nCnt[7]/nCnt[1] <<std::endl;
+std::cout<< "w/ loose muon                                : "<< nCnt[++q]<<" , "<<nCnt[q]/float(nCnt[1]) <<std::endl;
+std::cout<< "w/ tight muon                                : "<< nCnt[++q]<<" , "<<nCnt[q]/float(nCnt[1]) <<std::endl;
 std::cout<< "-----------------------------------------------"<<std::endl;
-std::cout<< "w/ loose electron Barrel                     : "<< nCnt[4]<<" , "<<nCnt[4]/nCnt[1] <<std::endl;
-std::cout<< "w/ loose electron EndCap                     : "<< nCnt[5]<<" , "<<nCnt[5]/nCnt[1] <<std::endl;
-std::cout<< "w/ medium electron Barrel                    : "<< nCnt[4]<<" , "<<nCnt[4]/nCnt[1] <<std::endl;
-std::cout<< "w/ mudium electron EndCap                    : "<< nCnt[5]<<" , "<<nCnt[5]/nCnt[1] <<std::endl;
-std::cout<< "w/ tight electron Barrel                     : "<< nCnt[4]<<" , "<<nCnt[4]/nCnt[1] <<std::endl;
-std::cout<< "w/ tight electron EndCap                     : "<< nCnt[5]<<" , "<<nCnt[5]/nCnt[1] <<std::endl;
+std::cout<< "w/ loose electron Barrel                     : "<< nCnt[++q]<<" , "<<nCnt[q]/float(nCnt[1]) <<std::endl;
+std::cout<< "w/ loose electron EndCap                     : "<< nCnt[++q]<<" , "<<nCnt[q]/float(nCnt[1]) <<std::endl;
+std::cout<< "w/ medium electron Barrel                    : "<< nCnt[++q]<<" , "<<nCnt[q]/float(nCnt[1]) <<std::endl;
+std::cout<< "w/ medium electron EndCap                    : "<< nCnt[++q]<<" , "<<nCnt[q]/float(nCnt[1]) <<std::endl;
+std::cout<< "w/ tight electron Barrel                     : "<< nCnt[++q]<<" , "<<nCnt[q]/float(nCnt[1]) <<std::endl;
+std::cout<< "w/ tight electron EndCap                     : "<< nCnt[++q]<<" , "<<nCnt[q]/float(nCnt[1]) <<std::endl;
 std::cout<< "-----------------------------------------------"<<std::endl;
-std::cout<< "w/ loose 'clean' electron Barrel             : "<< nCnt[4]<<" , "<<nCnt[4]/nCnt[1] <<std::endl;
-std::cout<< "w/ loose 'clean' electron EndCap             : "<< nCnt[5]<<" , "<<nCnt[5]/nCnt[1] <<std::endl;
-std::cout<< "w/ medium 'clean' electron Barrel            : "<< nCnt[4]<<" , "<<nCnt[4]/nCnt[1] <<std::endl;
-std::cout<< "w/ mudium 'clean' electron EndCap            : "<< nCnt[5]<<" , "<<nCnt[5]/nCnt[1] <<std::endl;
-std::cout<< "w/ tight 'clean' electron Barrel             : "<< nCnt[4]<<" , "<<nCnt[4]/nCnt[1] <<std::endl;
-std::cout<< "w/ tight 'clean' electron EndCap             : "<< nCnt[5]<<" , "<<nCnt[5]/nCnt[1] <<std::endl;
+std::cout<< "w/ loose 'clean' electron Barrel             : "<< nCnt[++q]<<" , "<<nCnt[q]/float(nCnt[1]) <<std::endl;
+std::cout<< "w/ loose 'clean' electron EndCap             : "<< nCnt[++q]<<" , "<<nCnt[q]/float(nCnt[1]) <<std::endl;
+std::cout<< "w/ medium 'clean' electron Barrel            : "<< nCnt[++q]<<" , "<<nCnt[q]/float(nCnt[1]) <<std::endl;
+std::cout<< "w/ medium 'clean' electron EndCap            : "<< nCnt[++q]<<" , "<<nCnt[q]/float(nCnt[1]) <<std::endl;
+std::cout<< "w/ tight 'clean' electron Barrel             : "<< nCnt[++q]<<" , "<<nCnt[q]/float(nCnt[1]) <<std::endl;
+std::cout<< "w/ tight 'clean' electron EndCap             : "<< nCnt[++q]<<" , "<<nCnt[q]/float(nCnt[1]) <<std::endl;
 std::cout<< "-----------------------------------------------"<<std::endl;
-std::cout<< "w/ loose photon Barrel                     : "<< nCnt[4]<<" , "<<nCnt[4]/nCnt[1] <<std::endl;
-std::cout<< "w/ loose photon EndCap                     : "<< nCnt[5]<<" , "<<nCnt[5]/nCnt[1] <<std::endl;
-std::cout<< "w/ medium photon Barrel                    : "<< nCnt[4]<<" , "<<nCnt[4]/nCnt[1] <<std::endl;
-std::cout<< "w/ medium photon EndCap                    : "<< nCnt[5]<<" , "<<nCnt[5]/nCnt[1] <<std::endl;
-std::cout<< "w/ tight photon Barrel                     : "<< nCnt[4]<<" , "<<nCnt[4]/nCnt[1] <<std::endl;
-std::cout<< "w/ tight photon EndCap                     : "<< nCnt[5]<<" , "<<nCnt[5]/nCnt[1] <<std::endl;
+std::cout<< "w/ loose photon Barrel                       : "<< nCnt[++q]<<" , "<<nCnt[q]/float(nCnt[1]) <<std::endl;
+std::cout<< "w/ loose photon EndCap                       : "<< nCnt[++q]<<" , "<<nCnt[q]/float(nCnt[1]) <<std::endl;
+std::cout<< "w/ medium photon Barrel                      : "<< nCnt[++q]<<" , "<<nCnt[q]/float(nCnt[1]) <<std::endl;
+std::cout<< "w/ medium photon EndCap                      : "<< nCnt[++q]<<" , "<<nCnt[q]/float(nCnt[1]) <<std::endl;
+std::cout<< "w/ tight photon Barrel                       : "<< nCnt[++q]<<" , "<<nCnt[q]/float(nCnt[1]) <<std::endl;
+std::cout<< "w/ tight photon EndCap                       : "<< nCnt[++q]<<" , "<<q<<nCnt[q]/float(nCnt[1]) <<std::endl;
 std::cout<< "-----------------------------------------------"<<std::endl;
 
+//save histograms inside sampleAnalysis.root
+TObjArray hlist(0);
+//hlist.Add( h_mt );
 
-
-std::cout<< "w/ selected electron , medium electron       : "<< nCnt[3]<<" , "<<nCnt[7] <<std::endl;
-std::cout<< "w/ selected muon, tight muon                 : "<< nCnt[4]<<" , "<<nCnt[8] <<std::endl;
-std::cout<< "w/ selected photon, loose photon             : "<< nCnt[5]<<" , "<<nCnt[9] <<std::endl;
-std::cout<< "-----------------------------------------------"<<std::endl;
-std::cout<< "w/ 'clean' medium electron                   : "<< nCnt[10] <<std::endl;
-std::cout<< "Loose photon w/ pt > 70                      : "<< nCnt[30] <<std::endl;
-std::cout<< "Medium electron & loose photon 70            : "<< nCnt[31] <<std::endl;
-std::cout<< "'Clean' medium electron & loose photon 70    : "<< nCnt[32] <<std::endl;
-std::cout<< "Tight muon & loose photon 70                 : "<< nCnt[40] <<std::endl;
-std::cout<< "Fake electron & EM Object 70                 : "<< nCnt[50] <<std::endl;
-std::cout<< "Fake muon     & EM Object 70                 : "<< nCnt[60] <<std::endl;
-
-
-TFile fout("st.root", "recreate");
+TFile fout("info.root", "recreate");
 hlist.Write();
 fout.Close();
+
 
 
 }
