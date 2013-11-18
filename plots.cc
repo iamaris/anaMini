@@ -244,11 +244,7 @@ void plots()
       for (std::set<unsigned int>::iterator it=em.begin(); it!=em.end(); ++it) {
         h_em0_pt->Fill(rp.pt[*it]);
       }
-      if(e.size>0) {
-        h_met2->Fill(met);
-      }
       if(m.size>0) {
-        h_met3->Fill(met);  
         for (std::set<unsigned int>::iterator it=em.begin(); it!=em.end(); ++it) {
           h_em2_pt->Fill(rp.pt[*it]);
         }
@@ -259,11 +255,13 @@ void plots()
         }
       }
       if(fe.size()>0) {
+        h_met2->Fill(met);
         for (std::set<unsigned int>::iterator it=fe.begin(); it!=fe.end(); ++it) {
           h_mt2->Fill(mt(met,metPhi,re.pt[*it],re.phi[*it]));
         }
       }
       if(fm.size()>0) {
+        h_met3->Fill(met);  
         for (std::set<unsigned int>::iterator it=fm.begin(); it!=fm.end(); ++it) {
           h_mt3->Fill(mt(met,metPhi,rm.pt[*it],rm.phi[*it]));
         }

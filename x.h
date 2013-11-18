@@ -447,6 +447,34 @@ namespace mini {
   }
 
   std::set<unsigned int> 
+  LoosePhoton(photon& _p, float _pt, bool _NoEndCap) {
+    std::set<unsigned int> loose;
+    for(unsigned int i=0;i<_p.size;i++) {
+      if(_p.pt[i]<_pt) continue;
+      if(_NoEndCap && _p.iSubdet[i]==1) continue;
+      if(_p.iSubdet[i]==0) {
+        //if(_p.nPixelSeeds[i] > 0) continue;
+        if(!(_p.electronVetoBit[i])) continue;
+        if(_p.hOverE[i] > 0.05) continue;
+        if(_p.sigmaIetaIeta[i] > 0.012) continue;
+        if(_p.chargedHadronIso[i] > 2.6) continue;
+        if(_p.neutralHadronIso[i] > 3.5) continue;
+        if(_p.photonIso[i] > 1.3) continue;
+        loose.insert(i);
+      } else if(_p.iSubdet[i]==1) {
+        //if(_p.nPixelSeeds[i] > 0) continue;
+        if(!(_p.electronVetoBit[i])) continue;
+        if(_p.hOverE[i] > 0.05) continue;
+        if(_p.sigmaIetaIeta[i] > 0.034) continue;
+        if(_p.chargedHadronIso[i] > 2.3) continue;
+        if(_p.neutralHadronIso[i] > 2.9) continue;
+        loose.insert(i);
+      }
+    }
+    return loose;
+  }
+
+  std::set<unsigned int> 
   LoosePhoton(photon& _p, std::set<unsigned int> _loose, float _pt=70.0) {
     for (std::set<unsigned int>::iterator it=_loose.begin(); it!=_loose.end(); ++it) {
       if(_p.pt[*it]<_pt) _loose.erase(it);
@@ -510,7 +538,31 @@ namespace mini {
   JetFakePhoton(photon& _p) {
     std::set<unsigned int> fake;
     for(unsigned int i=0;i<_p.size;i++) {
-      if(_p.pt[i]<10.) continue;
+      //if(_p.pt[i]<10.) continue;
+      if(_p.iSubdet[i]==0) {
+        if(_p.nPixelSeeds[i] > 0) continue;
+        if(_p.hOverE[i] > 0.05) continue;
+        if(_p.sigmaIetaIeta[i] < 0.012) continue;
+        if(_p.chargedHadronIso[i] < 2.6) continue;  
+        if(_p.neutralHadronIso[i] < 3.5) continue;
+        if(_p.photonIso[i] < 1.3) continue;
+        fake.insert(i);
+      } else if(_p.iSubdet[i]==1) {
+        if(_p.nPixelSeeds[i] > 0) continue;
+        if(_p.hOverE[i] > 0.05) continue;
+        if(_p.sigmaIetaIeta[i] < 0.034) continue;
+        if(_p.chargedHadronIso[i] < 2.3) continue;  
+        if(_p.neutralHadronIso[i] < 2.9) continue;
+        fake.insert(i);
+      }
+    } 
+    return fake;
+  }
+
+  std::set<unsigned int> 
+  JetFake1(photon& _p) {
+    std::set<unsigned int> fake;
+    for(unsigned int i=0;i<_p.size;i++) {
       if(_p.iSubdet[i]==0) {
         if(_p.nPixelSeeds[i] > 0) continue;
         if(_p.hOverE[i] > 0.05) continue;
@@ -519,13 +571,57 @@ namespace mini {
         if(_p.neutralHadronIso[i] > 3.5) continue;
         if(_p.photonIso[i] > 1.3) continue;
         fake.insert(i);
-      } else if(_p.iSubdet[i]==1) {
+      }
+    } 
+    return fake;
+  }
+
+
+  std::set<unsigned int> 
+  JetFake2(photon& _p) {
+    std::set<unsigned int> fake;
+    for(unsigned int i=0;i<_p.size;i++) {
+      if(_p.iSubdet[i]==0) {
         if(_p.nPixelSeeds[i] > 0) continue;
         if(_p.hOverE[i] > 0.05) continue;
-        if(_p.sigmaIetaIeta[i] < 0.034) continue;
-        if(_p.chargedHadronIso[i] < 2.3) continue;  
-        if(_p.neutralHadronIso[i] > 2.9) continue;
+        if(_p.sigmaIetaIeta[i] < 0.012) continue;
+        if(_p.chargedHadronIso[i] > 2.6) continue;  
+        if(_p.neutralHadronIso[i] < 3.5) continue;
+        if(_p.photonIso[i] > 1.3) continue;
         fake.insert(i);
+      }
+    } 
+    return fake;
+  }
+
+  std::set<unsigned int> 
+  JetFake3(photon& _p) {
+    std::set<unsigned int> fake;
+    for(unsigned int i=0;i<_p.size;i++) {
+      if(_p.iSubdet[i]==0) {
+        if(_p.nPixelSeeds[i] > 0) continue;
+        if(_p.hOverE[i] > 0.05) continue;
+        if(_p.sigmaIetaIeta[i] < 0.012) continue;
+        if(_p.chargedHadronIso[i] > 2.6) continue;  
+        if(_p.neutralHadronIso[i] > 3.5) continue;
+        if(_p.photonIso[i] < 1.3) continue;
+        fake.insert(i);
+      }
+    } 
+    return fake;
+  }
+
+
+  std::set<unsigned int> 
+  JetPhoton(photon& _p,jet& _j) {
+    std::set<unsigned int> fake;
+    for(unsigned int i=0;i<_p.size;i++) {
+      if(_p.iSubdet[i]==1) continue; 
+      for (unsigned int k=0;k<_j.size;k++) {
+        if(deltaR(_p.eta[i],_p.phi[i],_j.eta[k],_j.phi[k])<0.05) {
+          fake.insert(i);
+          break;
+        }
       }
     } 
     return fake;
