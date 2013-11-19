@@ -583,6 +583,30 @@ namespace mini {
     return fake;
   }
 
+  std::set<unsigned> 
+  JetFakeObject(photon& _p) {
+    std::set<unsigned> fake;
+    for(unsigned i=0;i<_p.size;i++) {
+      if(_p.iSubdet[i]==0) {
+        if(!(_p.electronVetoBit[i])) continue;
+        if(_p.hOverE[i] > 0.05) continue;
+        //if(_p.sigmaIetaIeta[i] > 0.012) continue;
+        //if((_p.chargedHadronIso[i] < 2.6)&&(_p.chargedHadronIso[i] > 15.0)) continue;
+        if(_p.neutralHadronIso[i] > 3.5) continue;
+        if(_p.photonIso[i] > 1.3) continue;
+        fake.insert(i);
+      } else if(_p.iSubdet[i]==1) {
+        if(!(_p.electronVetoBit[i])) continue;
+        if(_p.hOverE[i] > 0.05) continue;
+        //if(_p.sigmaIetaIeta[i] > 0.034) continue;
+        //if((_p.chargedHadronIso[i] < 2.3)&&(_p.chargedHadronIso[i] > 15.0)) continue;        
+        if(_p.neutralHadronIso[i] > 2.9) continue;
+        fake.insert(i);
+      }
+    }
+    return fake;
+  }
+
 
   std::set<unsigned> 
   JetFake1(photon& _p, float _pt=0.0, bool _NoEndCap=false) {

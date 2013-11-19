@@ -57,7 +57,10 @@ void jfake()
   TH1F* h_sieta3 = new TH1F("h_sieta3", "ENDCAP: #gamma object #sigma_{i#etai#eta}", 70, 0.02, 0.055);
   TH1F* h_sieta4 = new TH1F("h_sieta4", "ENDCAP: #gamma->j #sigma_{i#etai#eta}", 70, 0.02, 0.055);  
   TH1F* h_sieta5 = new TH1F("h_sieta5", "ENDCAP: #gamma  #sigma_{i#etai#eta}", 70, 0.02, 0.055);    
-  
+  TH1F* h_chiso0 = new TH1F("h_chiso0", "BARREL: charged hadron iso", 60, 0., 60.);
+  TH1F* h_chiso1 = new TH1F("h_chiso1", "ENDCAP: charged hadron iso", 60, 0., 60.);
+  TH1F* h_chiso2 = new TH1F("h_chiso0", "BARREL: chiso w/ #sigma_{i#etai#eta} cut", 60, 0., 60.);
+  TH1F* h_chiso3 = new TH1F("h_chiso3", "ENDCAP: hiso w/ #sigma_{i#etai#eta} cut", 60, 0., 60.);
   
   unsigned nCnt[30] = {0};  
   //loop over events
@@ -65,7 +68,9 @@ void jfake()
   while(allObjects.GetEntry(iEntry++) != 0){
     nCnt[0]++;
     //std::set<unsigned> me = MediumElectron(re,p);
-    std::set<unsigned> jf = JetFake(rp);     
+    std::set<unsigned> jf = JetFake(rp);   
+    std::set<unsigned> jfo = JetFakeObject(rp);   
+
     ///HLT
     if(!hlt0 && !hlt1) continue;
     for(unsigned i(0);i<rp.size;++i) {
@@ -83,6 +88,18 @@ void jfake()
       h_sieta4->Fill(rp.sigmaIetaIeta[*it]);      
       
     }
+
+    for (std::set<unsigned>::iterator it=jfo.begin();it!=jfo.end();++it) {
+      if(rp.iSubdet[*it]==0) {
+          h_chiso0->Fill(rp.chargedHadronIso[*it]);
+          if(rp.sigmaIetaIeta[*it]<0.012) h_chiso2->Fill(rp.chargedHadronIso[*it]);
+      }
+      if(rp.iSubdet[*it]==1) {
+          h_chiso1->Fill(rp.chargedHadronIso[*it]);    
+          if(rp.sigmaIetaIeta[*it]<0.034) h_chiso3->Fill(rp.chargedHadronIso[*it]);  
+      }
+    }
+
     
     if(!p.size) continue;
 
@@ -106,6 +123,12 @@ h->cd(2);
 h_sieta3->Draw(); 
 h_sieta4->Draw("same");
 h_sieta5->Draw("same");
+h->cd(3);   
+h_chiso0->Draw(); 
+h_chiso2->Draw("same"); 
+h->cd(4);   
+h_chiso1->Draw();
+h_chiso3->Draw("same"); 
 
 //save histograms inside sampleAnalysis.root
 TObjArray hlist(0);
