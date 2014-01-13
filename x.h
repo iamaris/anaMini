@@ -394,6 +394,14 @@ namespace mini {
   }
 
   std::set<unsigned> 
+  LoosePhoton(photon& _p, std::set<unsigned> _loose, float _pt=70.0) {
+    for (std::set<unsigned>::iterator it=_loose.begin(); it!=_loose.end(); ++it) {
+      if(_p.pt[*it]<_pt) _loose.erase(it);
+    }
+    return _loose;
+  }
+
+  std::set<unsigned> 
   LoosePhoton(photon& _p) {
     std::set<unsigned> loose;
     for(unsigned i=0;i<_p.size;i++) {
@@ -474,63 +482,48 @@ namespace mini {
     return loose;
   }
 
-  std::set<unsigned> 
-  LoosePhoton(photon& _p, std::set<unsigned> _loose, float _pt=70.0) {
-    for (std::set<unsigned>::iterator it=_loose.begin(); it!=_loose.end(); ++it) {
-      if(_p.pt[*it]<_pt) _loose.erase(it);
-    }
-    return _loose;
-  }
-
 
   std::set<unsigned>
-  EMObject(photon& _p,float _pt) {
+  FakeableObject(photon& _p,float _pt=0.0) {
     std::set<unsigned> obj;
     for(unsigned i=0;i<_p.size;i++) {
       if(_p.pt[i] < _pt) continue;
       if(_p.iSubdet[i]==0) {
-        //if(_p.nPixelSeeds[i] > 0) continue;
         if(!(_p.electronVetoBit[i])) continue;
         if(_p.hOverE[i] > 0.05) continue;
-        //if(_p.sigmaIetaIeta[i] > 0.012) continue;
-        if(_p.chargedHadronIso[i] > 2.6) continue;
-        if(_p.neutralHadronIso[i] > 3.5) continue;
-        if(_p.photonIso[i] > 1.3) continue;
+        if((_p.sigmaIetaIeta[i] < 0.012)&&(_p.chargedHadronIso[i] < 2.6)&&(_p.neutralHadronIso[i]<3.5)&&(_p.photonIso[i]<1.3))continue;
         obj.insert(i);
       } else if(_p.iSubdet[i]==1) {
-        //if(_p.nPixelSeeds[i] > 0) continue;
         if(!(_p.electronVetoBit[i])) continue;
         if(_p.hOverE[i] > 0.05) continue;
-        //if(_p.sigmaIetaIeta[i] > 0.034) continue;
-        if(_p.chargedHadronIso[i] > 2.3) continue;
-        if(_p.neutralHadronIso[i] > 2.9) continue;
+        if((_p.sigmaIetaIeta[i]<0.034)&&(_p.chargedHadronIso[i]<2.3)&&(_p.neutralHadronIso[i]<2.9))continue;
         obj.insert(i);
       }
     }
     return obj;
   }
 
-  std::set<unsigned>
-  YLoosePhoton(photon& _p) {
+  std::set<unsigned> 
+  EMObject(photon& _p,float _pt=0.0) {
     std::set<unsigned> loose;
     for(unsigned i=0;i<_p.size;i++) {
-      if(_p.isLoose[i]) {
+      if(_p.pt[i] < _pt) continue;
+      if(_p.iSubdet[i]==0) {
+        if(!(_p.electronVetoBit[i])) continue;
+        if(_p.hOverE[i] > 0.05) continue;
+        if(_p.chargedHadronIso[i] > 2.6) continue;
+        if(_p.neutralHadronIso[i] > 3.5) continue;
+        if(_p.photonIso[i] > 1.3) continue;
+        loose.insert(i);
+      } else if(_p.iSubdet[i]==1) {
+        if(!(_p.electronVetoBit[i])) continue;
+        if(_p.hOverE[i] > 0.05) continue;
+        if(_p.chargedHadronIso[i] > 2.3) continue;
+        if(_p.neutralHadronIso[i] > 2.9) continue;
         loose.insert(i);
       }
     }
     return loose;
-  }
-
-
-  std::set<unsigned>
-  YTightMuon(muon& _p) {
-    std::set<unsigned> tight;
-    for(unsigned i=0;i<_p.size;i++) {
-      if(_p.isTight[i]) {
-        tight.insert(i);
-      } 
-    }
-    return tight;
   }
 
 
@@ -650,9 +643,10 @@ namespace mini {
   }
 
   std::set<unsigned> 
-  ElectronFakePhoton(photon& _p) {
+  ElectronFakePhoton(photon& _p,float _pt=0.0) {
     std::set<unsigned> fake;
     for(unsigned i=0;i<_p.size;i++) {
+      if(_p.pt[i] < _pt) continue;
       if(_p.iSubdet[i]==0) {
         //if(_p.nPixelSeeds[i] == 0) continue;
         if((_p.electronVetoBit[i])) continue;
@@ -715,9 +709,10 @@ namespace mini {
 
 
   std::set<unsigned>
-  FakeMuon(muon & _m) {
+  FakeMuon(muon & _m, float _pt=0.0) {
     std::set<unsigned> tight;
     for (unsigned i=0;i<_m.size;i++) {
+        if(_m.pt[i] < _pt) continue;     
         if(_m.pt[i] <= 200.) {
           if(_m.iSubdet[i] == -1) continue;
           if(!_m.isGlobalMuon[i]) continue;
@@ -834,38 +829,12 @@ namespace mini {
 
 
   std::set<unsigned>
-  FakeElectron(electron& _e) {
+  FakeElectron(electron& _e,float _pt=0.0) {
     std::set<unsigned> fake;
     for (unsigned i=0;i<_e.size;i++) {
-      if(_e.iSubdet[i]==0) {
-        if(_e.deltaEta[i] > 0.004) continue;
-        if(_e.deltaPhi[i] > 0.06) continue;
-        if(_e.sigmaIetaIeta[i] > 0.01) continue;
-        if(_e.hOverE[i] > 0.12) continue;
-        if(_e.d0[i] > 0.02) continue;
-        if(_e.dz[i] > 0.1) continue;
-        if(_e.epDiff[i] > 0.05) continue;
-        if(_e.combRelIso[i] < 0.15) continue;
-        if(_e.combRelIso[i] > 0.30) continue;
-        if(!_e.passConversionVeto[i]) continue;
-        if(_e.vtxFitProb[i] > 0.000001) continue;
-        if(_e.nMissingHits[i] > 1) continue;
-        fake.insert(i);
-      } else if(_e.iSubdet[i]==1){
-        if(_e.deltaEta[i] > 0.007) continue;
-        if(_e.deltaPhi[i] > 0.03) continue;
-        if(_e.sigmaIetaIeta[i] > 0.03) continue;
-        if(_e.hOverE[i] > 0.1) continue;
-        if(_e.d0[i] > 0.02) continue;
-        if(_e.dz[i] > 0.1) continue;
-        if(_e.epDiff[i] > 0.05) continue;
-        if(_e.combRelIso[i] < 0.15) continue;
-        if(_e.combRelIso[i] > 0.30) continue;
-        if(!_e.passConversionVeto[i]) continue;
-        if(_e.vtxFitProb[i] > 0.000001) continue;
-        if(_e.nMissingHits[i] > 1) continue;
-        fake.insert(i);
-      }
+      if(_e.pt[i] < _pt) continue;
+      if(_e.combRelIso[i] > 0.15) continue;
+      fake.insert(i);
     }
     return fake;
   }
