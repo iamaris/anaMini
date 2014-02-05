@@ -69,9 +69,20 @@ void st()
   TH1F* h_st7 = new TH1F("h_st7", "St j=7", 50, 0., 2500.);
   TH1F* h_st8 = new TH1F("h_st8", "St j>=8", 50, 0., 2500.);
   TH1F* h_st12 = new TH1F("h_st12", "St 1-2 jets", 50, 0., 2500.);
+  TH1F* h_st23 = new TH1F("h_st23", "St 2-3 jets", 50, 0., 2500.);
   TH1F* h_st34 = new TH1F("h_st34", "St 3-4 jets", 50, 0., 2500.);
   TH1F* h_st55 = new TH1F("h_st55", "St >4 jets", 50, 0., 2500.);
-  
+  h_st1->Sumw2();  
+  h_st2->Sumw2();  
+  h_st3->Sumw2();  
+  h_st4->Sumw2();  
+  h_st6->Sumw2();  
+  h_st7->Sumw2();  
+  h_st8->Sumw2();  
+  h_st12->Sumw2();  
+  h_st23->Sumw2();  
+  h_st34->Sumw2();  
+  h_st55->Sumw2();  
   TH1F* h_njet = new TH1F("h_njet","# of jets (corrected)",10,0.,10.);
   TH1F* h_njet_raw = new TH1F("h_njet_raw","# of jets (uncorrected)",10,0.,10.);
 
@@ -177,6 +188,7 @@ void st()
     if(jSize>=8) h_st8->Fill(st);
 
     if(jSize==1||jSize==2) h_st12->Fill(st);
+    if(jSize==2||jSize==3) h_st23->Fill(st);
     if(jSize==3||jSize==4) h_st34->Fill(st);
     if(jSize>=5) h_st55->Fill(st);
   }//while
@@ -221,24 +233,24 @@ TH1F *h3 = (TH1F*)h_st4->Clone("h3");
 h3->Divide(h_st3);
 h3->Draw("e");
 
-TCanvas *c = new TCanvas("c", "St plots",800, 800);
+TCanvas *c = new TCanvas("c", "St plots:S23 comparison",800, 800);
 c->Divide(2,2);
 c->cd(1);
-h_st12->Draw();
-h_st5->Draw("same");
-c->cd(3);
-TH1F *h4 = (TH1F*)h_st5->Clone("h4");
-h4->Divide(h_st12);
+TH1F *h4 = (TH1F*)h_st4->Clone("h4");
+h4->Divide(h_st23);
 h4->Draw("e");
 c->cd(2);
-h_st34->Draw();
-h_st7->Draw("same");
-c->cd(4);
-TH1F *h5 = (TH1F*)h_st7->Clone("h5");
-h5->Divide(h_st34);
+TH1F *h5 = (TH1F*)h_st5->Clone("h5");
+h5->Divide(h_st23);
 h5->Draw("e");
-
-
+c->cd(3);
+TH1F *h6 = (TH1F*)h_st6->Clone("h6");
+h6->Divide(h_st23);
+h6->Draw("e");
+c->cd(4);
+TH1F *h7 = (TH1F*)h_st7->Clone("h7");
+h7->Divide(h_st23);
+h7->Draw("e");
 /*
 h_st1->Scale(1/Norm(h_st1,700,2000));
 h_st2->Scale(1/Norm(h_st2,700,2000));
